@@ -24,17 +24,28 @@ dmg_type :: enum {
 	bashing,
 }
 
+tile_type :: enum {
+	path_1,
+	water_1,
+	rock_1,
+	tree_1,
+	grass_1,
+	dirt_1,
+}
+
 Game_State :: struct {
-	running:     bool,
-	window:      ^sdl.Window,
-	renderer:    ^sdl.Renderer,
-	money:       int,
-	list_tiles:  [dynamic][dynamic]^Tile,
-	list_towers: [dynamic]^Tower,
+	running:       bool,
+	window:        ^sdl.Window,
+	renderer:      ^sdl.Renderer,
+	money:         int,
+	list_tiles:    [dynamic]Tile,
+	list_towers:   [dynamic]Tower,
+	level_playing: int,
 }
 
 Tile :: struct {
-	rect:             ^sdl.FRect,
+	rect:             sdl.FRect,
+	type:             tile_type,
 	coord:            [2]int,
 	is_constructable: bool,
 	is_path:          bool,
@@ -43,9 +54,9 @@ Tile :: struct {
 }
 
 Tower :: struct {
-	type:                  ^Tower_type,
-	damage_type:           ^dmg_type,
-	secondary_damage_type: ^dmg_type,
+	type:                  Tower_type,
+	damage_type:           dmg_type,
+	secondary_damage_type: dmg_type,
 	dmg:                   int,
 	secondary_dmg:         int,
 	reload_time:           int,
@@ -62,8 +73,9 @@ main :: proc() {
 	defer sdl.Quit()
 
 	state := Game_State {
-		running = true,
-		money   = 100,
+		running       = true,
+		money         = 100,
+		level_playing = 1,
 	}
 
 	state.window = sdl.CreateWindow("Tower Defense Odin Style", SCREEN_WIDTH, SCREEN_HEIGHT, {})
@@ -88,6 +100,7 @@ main :: proc() {
 
 	sdl.SetRenderDrawBlendMode(state.renderer, sdl.BLENDMODE_BLEND)
 	defer all_cleanup(&state)
+	init_map(&state)
 
 	for state.running {
 		handle_events(&state)
@@ -128,9 +141,13 @@ update :: proc(state: ^Game_State) {
 }
 
 render :: proc(state: ^Game_State) {
-
+	sdl.SetRenderDrawColor(state.renderer, 20, 20, 20, 255)
+	sdl.RenderClear(state.renderer)
+	draw_map(state)
+	sdl.RenderPresent(state.renderer)
 }
 
 all_cleanup :: proc(state: ^Game_State) {
-
+	delete(state.list_tiles)
+	delete(state.list_towers)
 }
