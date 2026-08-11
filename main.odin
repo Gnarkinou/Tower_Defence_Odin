@@ -5,7 +5,7 @@ import sdl "vendor:sdl3"
 
 SCREEN_WIDTH :: 1280
 SCREEN_HEIGHT :: 1024
-TILE_SIZE :: 64
+TILE_SIZE :: 16
 
 Tower_type :: enum {
 	ice,
@@ -34,18 +34,24 @@ tile_type :: enum {
 }
 
 Game_State :: struct {
-	running:       bool,
-	window:        ^sdl.Window,
-	renderer:      ^sdl.Renderer,
-	money:         int,
-	list_tiles:    [dynamic]Tile,
-	list_towers:   [dynamic]Tower,
-	level_playing: int,
+	running:                 bool,
+	editor_mode:             bool,
+	editor_mode_initialized: bool,
+	window:                  ^sdl.Window,
+	renderer:                ^sdl.Renderer,
+	money:                   int,
+	list_tiles:              [dynamic]Tile,
+	list_towers:             [dynamic]Tower,
+	selected_tile:           Tile,
+	selected_tower:          Tower,
+	level_playing:           int,
+	width_right_panel:       int,
 }
 
 Tile :: struct {
 	rect:             sdl.FRect,
 	type:             tile_type,
+	color:            sdl.Color,
 	coord:            [2]int,
 	is_constructable: bool,
 	is_path:          bool,
@@ -73,9 +79,12 @@ main :: proc() {
 	defer sdl.Quit()
 
 	state := Game_State {
-		running       = true,
-		money         = 100,
-		level_playing = 1,
+		running                 = true,
+		editor_mode             = true,
+		editor_mode_initialized = false,
+		money                   = 100,
+		level_playing           = 1,
+		width_right_panel       = 100,
 	}
 
 	state.window = sdl.CreateWindow("Tower Defense Odin Style", SCREEN_WIDTH, SCREEN_HEIGHT, {})
@@ -103,6 +112,16 @@ main :: proc() {
 	init_map(&state)
 
 	for state.running {
+		if state.editor_mode {
+			if !state.editor_mode_initialized {
+				init_create_map(&state)
+				state.editor_mode_initialized = true
+			}
+			handle_events_editor(&state)
+			update_editor(&state)
+			render_editor(&state)
+			continue
+		}
 		handle_events(&state)
 		update(&state)
 		render(&state)

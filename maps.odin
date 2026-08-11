@@ -11,6 +11,8 @@ init_map :: proc(state: ^Game_State) {
 
 draw_map :: proc(state: ^Game_State) {
 	for &tile in &state.list_tiles {
+		if tile.rect.x > SCREEN_WIDTH - f32(state.width_right_panel) || tile.rect.x < -tile.rect.w do continue
+		if tile.rect.y < -tile.rect.h || tile.rect.y > SCREEN_HEIGHT - tile.rect.h do continue
 		#partial switch tile.type {
 		case .water_1:
 			sdl.SetRenderDrawColor(state.renderer, 20, 20, 200, 255)
