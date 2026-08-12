@@ -142,6 +142,7 @@ handle_events :: proc(state: ^Game_State) {
 		case .MOUSE_MOTION:
 		//state.mouse_coord[0] = event.motion.x
 		//state.mouse_coord[1] = event.motion.y
+
 		case .MOUSE_BUTTON_DOWN:
 			if event.button.button == sdl.BUTTON_LEFT {
 				fmt.println("Left click at: ", event.button.x, event.button.y)
