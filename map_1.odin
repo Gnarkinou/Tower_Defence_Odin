@@ -18,6 +18,7 @@ init_map1 :: proc(state: ^Game_State) {
 				t.is_hovered = false
 				t.is_path = true
 				t.type = .path_1
+				t.color = {30, 30, 30, 255}
 				t.coord = {i, j}
 				append(&state.list_tiles, t)
 				continue
@@ -32,6 +33,7 @@ init_map1 :: proc(state: ^Game_State) {
 				t.is_hovered = false
 				t.is_path = false
 				t.type = .water_1
+				t.color = {20, 20, 200, 255}
 				t.coord = {i, j}
 				append(&state.list_tiles, t)
 				continue
@@ -46,8 +48,10 @@ init_map1 :: proc(state: ^Game_State) {
 			t.is_hovered = false
 			t.is_path = false
 			t.type = .grass_1
+			t.color = {34, 139, 34, 255}
 			t.coord = {i, j}
 			append(&state.list_tiles, t)
 		}
 	}
+	//save_level(state, current_level_file_path)
 }

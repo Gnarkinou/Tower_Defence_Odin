@@ -5,7 +5,7 @@ import sdl "vendor:sdl3"
 
 SCREEN_WIDTH :: 1280
 SCREEN_HEIGHT :: 1024
-TILE_SIZE :: 16
+TILE_SIZE :: 40
 
 Tower_type :: enum {
 	ice,
@@ -31,6 +31,8 @@ tile_type :: enum {
 	tree_1,
 	grass_1,
 	dirt_1,
+	start_1,
+	end_1,
 }
 
 Game_State :: struct {
@@ -43,6 +45,7 @@ Game_State :: struct {
 	list_tiles:              [dynamic]Tile,
 	list_towers:             [dynamic]Tower,
 	selected_tile:           Tile,
+	previous_selected_tile:  Tile,
 	selected_tower:          Tower,
 	level_playing:           int,
 	width_right_panel:       int,
@@ -84,7 +87,7 @@ main :: proc() {
 		editor_mode_initialized = false,
 		money                   = 100,
 		level_playing           = 1,
-		width_right_panel       = 100,
+		width_right_panel       = 300,
 	}
 
 	state.window = sdl.CreateWindow("Tower Defense Odin Style", SCREEN_WIDTH, SCREEN_HEIGHT, {})
@@ -109,7 +112,7 @@ main :: proc() {
 
 	sdl.SetRenderDrawBlendMode(state.renderer, sdl.BLENDMODE_BLEND)
 	defer all_cleanup(&state)
-	init_map(&state)
+	//init_map(&state)
 
 	for state.running {
 		if state.editor_mode {
