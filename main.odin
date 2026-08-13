@@ -26,10 +26,19 @@ dmg_type :: enum {
 
 tile_type :: enum {
 	path_1,
+	path_2,
+	path_3,
+	path_4,
+	path_5,
+	path_6,
+	path_7,
 	water_1,
 	rock_1,
 	tree_1,
 	grass_1,
+	grass_2,
+	grass_3,
+	grass_4,
 	dirt_1,
 	start_1,
 	end_1,
@@ -49,6 +58,11 @@ Game_State :: struct {
 	selected_tower:          Tower,
 	level_playing:           int,
 	width_right_panel:       int,
+	texture_cache:           Texture_cache,
+}
+
+Texture_cache :: struct {
+	texture: [tile_type]^sdl.Texture,
 }
 
 Tile :: struct {
@@ -173,4 +187,8 @@ render :: proc(state: ^Game_State) {
 all_cleanup :: proc(state: ^Game_State) {
 	delete(state.list_tiles)
 	delete(state.list_towers)
+
+	for texture in state.texture_cache.texture {
+		sdl.DestroyTexture(texture)
+	}
 }

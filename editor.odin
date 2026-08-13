@@ -10,12 +10,14 @@ current_level_file_path: string = "Sources/maps/map1.save"
 
 init_create_map :: proc(state: ^Game_State) {
 	clear(&state.list_tiles)
-	init_map1(state) // this is for testing
+	//init_map1(state) // this is for testing
 	clear(&list_all_possible_tiles)
 	right_panel_rect := init_right_panel(state)
 	fmt.println("The right panel rect is: ", right_panel_rect)
 	init_all_possible_tiles(state, &right_panel_rect)
-	fmt.println("The all possible tiles are: ", list_all_possible_tiles[:])
+	fmt.println("Init all possible tiles is done")
+	init_load_tile_texture(state)
+	fmt.println("great success initializing the all possibler tiles !")
 	if !load_level(state, current_level_file_path) {
 		fmt.println("Error loading the map, exiting now...")
 		state.running = false
@@ -34,7 +36,11 @@ init_right_panel :: proc(state: ^Game_State) -> sdl.FRect {
 }
 
 init_all_possible_tiles :: proc(state: ^Game_State, panel: ^sdl.FRect) {
-	clear(&list_all_possible_tiles)
+	if list_all_possible_tiles == nil {
+		list_all_possible_tiles = make([dynamic]Tile, 0, len(tile_type))
+	} else {
+		clear(&list_all_possible_tiles)
+	}
 	num_tiles_w: int = int(panel.w / TILE_SIZE)
 	num_tiles_h: int = int(panel.h / TILE_SIZE)
 	fmt.println(
@@ -63,6 +69,12 @@ init_all_possible_tiles :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 		case .grass_1:
 			t.color = {34, 250, 34, 255}
 		case .path_1:
+			t.color = {30, 30, 30, 255}
+			t.is_path = true
+		case .path_2:
+			t.color = {30, 30, 30, 255}
+			t.is_path = true
+		case .path_3:
 			t.color = {30, 30, 30, 255}
 			t.is_path = true
 		case .rock_1:
@@ -133,16 +145,21 @@ update_editor :: proc(state: ^Game_State) {
 }
 
 draw_right_panel :: proc(state: ^Game_State) {
-	for item in list_all_possible_tiles {
-		rect := item.rect
-		sdl.SetRenderDrawColor(
-			state.renderer,
-			item.color[0],
-			item.color[1],
-			item.color[2],
-			item.color[3],
-		)
-		sdl.RenderFillRect(state.renderer, &rect)
+	for tile in list_all_possible_tiles {
+		rect := tile.rect
+		texture := state.texture_cache.texture[tile.type]
+		if texture != nil {
+			sdl.RenderTexture(state.renderer, texture, nil, &rect)
+		} else {
+			sdl.SetRenderDrawColor(
+				state.renderer,
+				tile.color[0],
+				tile.color[1],
+				tile.color[2],
+				tile.color[3],
+			)
+			sdl.RenderFillRect(state.renderer, &rect)
+		}
 	}
 }
 
