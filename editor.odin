@@ -163,10 +163,13 @@ draw_right_panel :: proc(state: ^Game_State) {
 		}
 
 		if tile.is_hovered {
-			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 150)
+			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 100)
 			sdl.RenderFillRect(state.renderer, &rect)
 		}
-
+		if tile.is_selected {
+			sdl.SetRenderDrawColor(state.renderer, 200, 20, 20, 100)
+			sdl.RenderFillRect(state.renderer, &rect)
+		}
 	}
 }
 
@@ -208,6 +211,20 @@ hovered_tile_editor :: proc(state: ^Game_State, event: ^sdl.Event) {
 	}
 }
 
+reset_previously_selected_tiles :: proc(state: ^Game_State) {
+	for &tile in &list_all_possible_tiles {
+		tile.is_selected = false
+	}
+	state.previous_selected_tile = {}
+}
+
+reset_selected_tiles :: proc(state: ^Game_State) {
+	for &tile in state.list_tiles {
+		tile.is_selected = false
+	}
+	state.selected_tile = {}
+}
+
 select_tile_editor :: proc(state: ^Game_State, event: ^sdl.Event) {
 	if event.button.x > SCREEN_WIDTH || event.button.x < 0 do return
 	if event.button.y < 0 || event.button.y > SCREEN_HEIGHT do return
@@ -217,25 +234,29 @@ select_tile_editor :: proc(state: ^Game_State, event: ^sdl.Event) {
 	click_coord: [2]int
 
 	if event.button.x > SCREEN_WIDTH - f32(state.width_right_panel) {
+		reset_previously_selected_tiles(state)
 		click_coord.x = int(
 			(event.button.x - f32(SCREEN_WIDTH) + f32(state.width_right_panel)) / TILE_SIZE,
 		)
 		click_coord.y = int(event.button.y / TILE_SIZE)
 		fmt.println("Clicked on the tile editor: ", click_coord)
 
-		for tile in &list_all_possible_tiles {
+		for &tile in &list_all_possible_tiles {
 			if tile.coord != click_coord do continue
+			tile.is_selected = true
 			state.previous_selected_tile = tile
 			fmt.println("Selected the tile type: ", tile.type)
 			return
 		}
+		fmt.println("The click on the Editor did not collide with a tile")
 		return
 	}
-
+	reset_selected_tiles(state)
 	click_coord.x = int(event.button.x / TILE_SIZE)
 	click_coord.y = int(event.button.y / TILE_SIZE)
 	for &tile in state.list_tiles {
 		if tile.coord != click_coord do continue
+		tile.is_selected = true
 		if state.previous_selected_tile != {} {
 			state.selected_tile = state.previous_selected_tile
 			state.selected_tile.coord = tile.coord
@@ -263,6 +284,8 @@ select_tile_editor :: proc(state: ^Game_State, event: ^sdl.Event) {
 clear_selected_tiles :: proc(state: ^Game_State) {
 	state.selected_tile = {}
 	state.previous_selected_tile = {}
+	reset_previously_selected_tiles(state)
+	reset_selected_tiles(state)
 }
 
 save_level :: proc(state: ^Game_State, filepath: string) -> bool {

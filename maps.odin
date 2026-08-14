@@ -98,5 +98,9 @@ draw_map :: proc(state: ^Game_State) {
 			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 150)
 			sdl.RenderFillRect(state.renderer, &rect)
 		}
+		if tile.is_selected {
+			sdl.SetRenderDrawColor(state.renderer, 200, 20, 20, 150)
+			sdl.RenderFillRect(state.renderer, &rect)
+		}
 	}
 }

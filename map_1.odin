@@ -25,6 +25,6 @@ init_map1 :: proc(state: ^Game_State) {
 			append(&state.list_tiles, t)
 		}
 	}
-	save_level(state, current_level_file_path)
+	//save_level(state, current_level_file_path)
 	fmt.println("Create map 1 is done")
 }
