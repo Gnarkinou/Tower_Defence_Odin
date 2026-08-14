@@ -120,6 +120,7 @@ handle_events_editor :: proc(state: ^Game_State) {
 		case .KEY_DOWN:
 			if event.key.scancode == .ESCAPE do state.running = false
 		case .MOUSE_MOTION:
+			hovered_tile_editor(state, &event)
 		//state.mouse_coord[0] = event.motion.x
 		//state.mouse_coord[1] = event.motion.y
 		case .MOUSE_BUTTON_DOWN:
@@ -160,6 +161,12 @@ draw_right_panel :: proc(state: ^Game_State) {
 			)
 			sdl.RenderFillRect(state.renderer, &rect)
 		}
+
+		if tile.is_hovered {
+			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 150)
+			sdl.RenderFillRect(state.renderer, &rect)
+		}
+
 	}
 }
 
@@ -169,6 +176,36 @@ render_editor :: proc(state: ^Game_State) {
 	draw_map(state)
 	draw_right_panel(state)
 	sdl.RenderPresent(state.renderer)
+}
+
+hovered_tile_editor :: proc(state: ^Game_State, event: ^sdl.Event) {
+	for &tile in &list_all_possible_tiles {
+		tile.is_hovered = false
+	}
+	for &tile in state.list_tiles {
+		tile.is_hovered = false
+	}
+
+	if event.motion.x > SCREEN_WIDTH || event.motion.x < 0 do return
+	if event.motion.y < 0 || event.motion.y > SCREEN_HEIGHT do return
+	mouse_coord: [2]int
+	if event.motion.x > SCREEN_WIDTH - f32(state.width_right_panel) {
+		mouse_coord.y = int(event.button.y / TILE_SIZE)
+		mouse_coord.x = int(
+			(event.motion.x - SCREEN_WIDTH + f32(state.width_right_panel)) / TILE_SIZE,
+		)
+		for &tile in &list_all_possible_tiles {
+			if tile.coord != mouse_coord do continue
+			tile.is_hovered = true
+		}
+	} else {
+		mouse_coord.x = int(event.motion.x / TILE_SIZE)
+		mouse_coord.y = int(event.button.y / TILE_SIZE)
+		for &tile in state.list_tiles {
+			if tile.coord != mouse_coord do continue
+			tile.is_hovered = true
+		}
+	}
 }
 
 select_tile_editor :: proc(state: ^Game_State, event: ^sdl.Event) {

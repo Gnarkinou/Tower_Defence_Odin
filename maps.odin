@@ -17,41 +17,41 @@ init_load_tile_texture :: proc(state: ^Game_State) {
 		path: string
 		#partial switch tile.type {
 		case .path_1:
-			path = "assets/grass/path_grass_horizontal_1.png"
+			path = "Sources/assets/grass/path_grass_horizontal_1.png"
 		case .path_2:
-			path = "assets/grass/path_grass_horizontal_2.png"
+			path = "Sources/assets/grass/path_grass_horizontal_2.png"
 		case .path_3:
-			path = "assets/grass/path_grass_vertical_1.png"
+			path = "Sources/assets/grass/path_grass_vertical_1.png"
 		case .path_4:
-			path = "assets/grass/turn_grass_1.png"
+			path = "Sources/assets/grass/turn_grass_1.png"
 		case .path_5:
-			path = "assets/grass/turn_grass_2.png"
+			path = "Sources/assets/grass/turn_grass_2.png"
 		case .path_6:
-			path = "assets/grass/turn_grass_3.png"
+			path = "Sources/assets/grass/turn_grass_3.png"
 		case .path_7:
-			path = "assets/grass/turn_grass_4.png"
+			path = "Sources/assets/grass/turn_grass_4.png"
 		case .tree_1:
-			path = "assets/grass/tree_grass_1.png"
+			path = "Sources/assets/grass/tree_grass_1.png"
 		case .rock_1:
-			path = "assets/grass/rock_grass_1.png"
+			path = "Sources/assets/grass/rock_grass_1.png"
 		case .start_1:
-			path = "assets/grass/start_grass_1.png"
+			path = "Sources/assets/grass/start_grass_1.png"
 		case .end_1:
-			path = "assets/grass/exit_grass_1.png"
+			path = "Sources/assets/grass/exit_grass_1.png"
 		case .grass_1:
-			path = "assets/grass/Grass_1.png"
+			path = "Sources/assets/grass/Grass_1.png"
 		case .grass_2:
-			path = "assets/grass/Grass_2.png"
+			path = "Sources/assets/grass/Grass_2.png"
 		case .grass_3:
-			path = "assets/grass/Grass_3.png"
+			path = "Sources/assets/grass/Grass_3.png"
 		case .grass_4:
-			path = "assets/grass/Grass_4.png"
+			path = "Sources/assets/grass/Grass_4.png"
 		}
 
 		c_path := strings.clone_to_cstring(path, context.temp_allocator)
 
 		if len(c_path) == 0 || len(path) == 0 {
-			fmt.println("Error loading the c_path of: ", path)
+			fmt.println("Error loading the c_path of: ", tile.type)
 			continue
 		}
 
@@ -91,6 +91,11 @@ draw_map :: proc(state: ^Game_State) {
 				tile.color[2],
 				tile.color[3],
 			)
+			sdl.RenderFillRect(state.renderer, &rect)
+		}
+
+		if tile.is_hovered {
+			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 150)
 			sdl.RenderFillRect(state.renderer, &rect)
 		}
 	}
