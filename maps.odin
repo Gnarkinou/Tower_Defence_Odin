@@ -73,6 +73,44 @@ init_load_tile_texture :: proc(state: ^Game_State) {
 	}
 }
 
+init_load_texture_tower :: proc(state: ^Game_State) {
+	path: string
+	for &tower in &state.list_possible_towers {
+		#partial switch tower.type {
+		case .ice:
+			path = "Sources/assets/towers/Tower_ice_1.png"
+		case .fire:
+			path = "Sources/assets/towers/Tower_fire_1.png"
+		case .lighting:
+			path = "Sources/assets/towers/Tower_electrik_1.png"
+		case .arrow:
+			path = "Sources/assets/towers/Tower_archer_1.png"
+		}
+		c_path := strings.clone_to_cstring(path, context.temp_allocator)
+
+		if len(c_path) == 0 || len(path) == 0 {
+			fmt.println("Error loading the c_path of: ", tower.type)
+			continue
+		}
+
+		surface := img.Load(c_path)
+		if surface == nil {
+			fmt.println("Failed to load the image: ", c_path, " error code: ", sdl.GetError())
+			continue
+		}
+		defer sdl.DestroySurface(surface)
+
+		texture := sdl.CreateTextureFromSurface(state.renderer, surface)
+		if texture == nil {
+			fmt.println("Error loading the texture: ", path, " with error: ", sdl.GetError())
+			continue
+		}
+
+		sdl.SetTextureBlendMode(texture, {.BLEND})
+		state.texture_tower.texture[tower.type] = texture
+	}
+}
+
 draw_map :: proc(state: ^Game_State) {
 	for &tile in &state.list_tiles {
 		if tile.rect.x + tile.rect.w >= SCREEN_WIDTH - f32(state.width_right_panel) || tile.rect.x < -tile.rect.w do continue

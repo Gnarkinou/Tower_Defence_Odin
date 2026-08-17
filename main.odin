@@ -5,15 +5,13 @@ import sdl "vendor:sdl3"
 
 SCREEN_WIDTH :: 1280
 SCREEN_HEIGHT :: 1024
-TILE_SIZE :: 40
+TILE_SIZE :: 80
 
-Tower_type :: enum {
+tower_type :: enum {
 	ice,
 	fire,
 	lighting,
-	wind,
 	arrow,
-	melee,
 }
 
 dmg_type :: enum {
@@ -21,7 +19,6 @@ dmg_type :: enum {
 	fire,
 	lighting,
 	piecing,
-	bashing,
 }
 
 tile_type :: enum {
@@ -48,10 +45,12 @@ Game_State :: struct {
 	running:                 bool,
 	editor_mode:             bool,
 	editor_mode_initialized: bool,
+	game_mode_initialized:   bool,
 	window:                  ^sdl.Window,
 	renderer:                ^sdl.Renderer,
 	money:                   int,
 	list_tiles:              [dynamic]Tile,
+	list_possible_towers:    [dynamic]Tower,
 	list_towers:             [dynamic]Tower,
 	selected_tile:           Tile,
 	previous_selected_tile:  Tile,
@@ -59,6 +58,11 @@ Game_State :: struct {
 	level_playing:           int,
 	width_right_panel:       int,
 	texture_cache:           Texture_cache,
+	texture_tower:           Texture_tower,
+}
+
+Texture_tower :: struct {
+	texture: [tower_type]^sdl.Texture,
 }
 
 Texture_cache :: struct {
@@ -77,15 +81,21 @@ Tile :: struct {
 }
 
 Tower :: struct {
-	type:                  Tower_type,
-	damage_type:           dmg_type,
-	secondary_damage_type: dmg_type,
-	dmg:                   int,
-	secondary_dmg:         int,
-	reload_time:           int,
-	is_selected:           bool,
-	coord:                 [2]int,
-	rect:                  ^sdl.FRect,
+	type:        tower_type,
+	damage_type: dmg_type,
+	dmg:         int,
+	reload_time: int,
+	range:       int,
+	is_selected: bool,
+	coord:       [2]int,
+	rect:        sdl.FRect,
+}
+
+projectile :: struct {
+	damage_type: ^dmg_type,
+	dmg:         ^int,
+	rect:        ^sdl.FRect,
+	is_alive:    bool,
 }
 
 main :: proc() {
@@ -97,8 +107,9 @@ main :: proc() {
 
 	state := Game_State {
 		running                 = true,
-		editor_mode             = true,
+		editor_mode             = false,
 		editor_mode_initialized = false,
+		game_mode_initialized   = false,
 		money                   = 100,
 		level_playing           = 1,
 		width_right_panel       = 300,
@@ -138,6 +149,9 @@ main :: proc() {
 			update_editor(&state)
 			render_editor(&state)
 			continue
+		} else if !state.game_mode_initialized {
+			init_game_mode(&state)
+			state.game_mode_initialized = true
 		}
 		handle_events(&state)
 		update(&state)
@@ -181,6 +195,7 @@ render :: proc(state: ^Game_State) {
 	sdl.SetRenderDrawColor(state.renderer, 20, 20, 20, 255)
 	sdl.RenderClear(state.renderer)
 	draw_map(state)
+	draw_right_panel_towers(state)
 	sdl.RenderPresent(state.renderer)
 }
 
