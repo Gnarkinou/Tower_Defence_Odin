@@ -142,3 +142,23 @@ draw_map :: proc(state: ^Game_State) {
 		}
 	}
 }
+
+draw_towers :: proc(state: ^Game_State) {
+	for &tower in &state.list_towers {
+		if tower.rect.x + tower.rect.w >= SCREEN_WIDTH - f32(state.width_right_panel) || tower.rect.x < -tower.rect.w do continue
+		if tower.rect.y < -tower.rect.h || tower.rect.y > SCREEN_HEIGHT - tower.rect.h do continue
+
+		rect := tower.rect
+		texture := state.texture_tower.texture[tower.type]
+
+		if texture != nil {
+			sdl.RenderTexture(state.renderer, texture, nil, &rect)
+		} else {
+			fmt.println("Error loading the tower texture for the map")
+		}
+		if tower.is_selected {
+			sdl.SetRenderDrawColor(state.renderer, 200, 20, 20, 150)
+			sdl.RenderFillRect(state.renderer, &rect)
+		}
+	}
+}

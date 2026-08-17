@@ -202,8 +202,13 @@ render :: proc(state: ^Game_State) {
 all_cleanup :: proc(state: ^Game_State) {
 	delete(state.list_tiles)
 	delete(state.list_towers)
+	delete(state.list_possible_towers)
 
 	for texture in state.texture_cache.texture {
+		sdl.DestroyTexture(texture)
+	}
+
+	for texture in state.texture_tower.texture {
 		sdl.DestroyTexture(texture)
 	}
 }

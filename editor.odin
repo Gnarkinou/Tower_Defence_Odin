@@ -101,8 +101,6 @@ init_all_possible_tiles :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 			w = TILE_SIZE,
 			h = TILE_SIZE,
 		}
-		//fmt.println("The rect x is: ", rect.x)
-		//fmt.println("The mini should be: ", SCREEN_WIDTH - state.width_right_panel)
 		t.type = tile
 		t.rect = rect
 		t.coord = {index, index_y}
@@ -142,7 +140,7 @@ handle_events_editor :: proc(state: ^Game_State) {
 }
 
 update_editor :: proc(state: ^Game_State) {
-
+	//? So this exists for now..... I guess....
 }
 
 draw_right_panel :: proc(state: ^Game_State) {
