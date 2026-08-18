@@ -55,6 +55,7 @@ Game_State :: struct {
 	selected_tile:           Tile,
 	previous_selected_tile:  Tile,
 	selected_tower:          Tower,
+	previous_selected_tower: Tower,
 	level_playing:           int,
 	width_right_panel:       int,
 	texture_cache:           Texture_cache,
@@ -84,10 +85,12 @@ Tower :: struct {
 	type:        tower_type,
 	damage_type: dmg_type,
 	dmg:         int,
-	reload_time: int,
-	range:       int,
+	reload_time: u8,
+	range:       u8,
 	is_selected: bool,
+	is_hovered:  bool,
 	coord:       [2]int,
+	cost:        int,
 	rect:        sdl.FRect,
 }
 
@@ -110,7 +113,7 @@ main :: proc() {
 		editor_mode             = false,
 		editor_mode_initialized = false,
 		game_mode_initialized   = false,
-		money                   = 100,
+		money                   = 350,
 		level_playing           = 1,
 		width_right_panel       = 300,
 	}
@@ -168,20 +171,23 @@ handle_events :: proc(state: ^Game_State) {
 		case .KEY_DOWN:
 			if event.key.scancode == .ESCAPE do state.running = false
 		case .MOUSE_MOTION:
+			hovered_tile_game(state, &event)
 		//state.mouse_coord[0] = event.motion.x
 		//state.mouse_coord[1] = event.motion.y
 
 		case .MOUSE_BUTTON_DOWN:
 			if event.button.button == sdl.BUTTON_LEFT {
-				fmt.println("Left click at: ", event.button.x, event.button.y)
+				select_tile_game(state, &event)
+				//fmt.println("Left click at: ", event.button.x, event.button.y)
 			} else if event.button.button == sdl.BUTTON_RIGHT {
-				fmt.println("Right click at: ", event.button.x, event.button.y)
+				clear_all_selected_towers_tiles(state)
+				//fmt.println("Right click at: ", event.button.x, event.button.y)
 			}
 		case .MOUSE_BUTTON_UP:
 			if event.button.button == sdl.BUTTON_LEFT {
-				fmt.println("Left click released at: ", event.button.x, event.button.y)
+				//fmt.println("Left click released at: ", event.button.x, event.button.y)
 			} else if event.button.button == sdl.BUTTON_RIGHT {
-				fmt.println("Right click released at: ", event.button.x, event.button.y)
+				//fmt.println("Right click released at: ", event.button.x, event.button.y)
 			}
 		}
 	}
@@ -192,10 +198,12 @@ update :: proc(state: ^Game_State) {
 }
 
 render :: proc(state: ^Game_State) {
+	//sdl.SetRenderDrawBlendMode(state.renderer, sdl.BLENDMODE_BLEND)
 	sdl.SetRenderDrawColor(state.renderer, 20, 20, 20, 255)
 	sdl.RenderClear(state.renderer)
 	draw_map(state)
 	draw_right_panel_towers(state)
+	draw_towers(state)
 	sdl.RenderPresent(state.renderer)
 }
 

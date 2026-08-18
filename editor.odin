@@ -304,7 +304,6 @@ load_level :: proc(state: ^Game_State, filepath: string) -> bool {
 		return false
 	}
 	defer delete(data)
-
 	if len(data) % size_of(Tile) != 0 {
 		fmt.println("Corrupted file: size issue when loading")
 		return false

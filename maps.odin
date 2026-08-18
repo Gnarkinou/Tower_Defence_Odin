@@ -47,28 +47,19 @@ init_load_tile_texture :: proc(state: ^Game_State) {
 		case .grass_4:
 			path = "Sources/assets/grass/Grass_4.png"
 		}
-
 		c_path := strings.clone_to_cstring(path, context.temp_allocator)
-
 		if len(c_path) == 0 || len(path) == 0 {
 			fmt.println("Error loading the c_path of: ", tile.type)
 			continue
 		}
-
-		surface := img.Load(c_path)
-		if surface == nil {
-			fmt.println("Failed to load the image: ", c_path, " error code: ", sdl.GetError())
-			continue
-		}
-		defer sdl.DestroySurface(surface)
-
-		texture := sdl.CreateTextureFromSurface(state.renderer, surface)
+		texture := img.LoadTexture(state.renderer, c_path)
 		if texture == nil {
-			fmt.println("Error loading the texture: ", path, " with error: ", sdl.GetError())
+			fmt.println("Error loading texture:", path, "Error:", sdl.GetError())
 			continue
 		}
-
-		sdl.SetTextureBlendMode(texture, {.BLEND})
+		if !sdl.SetTextureBlendMode(texture, sdl.BLENDMODE_BLEND) {
+			fmt.println("Failed to enable texture blending: ", sdl.GetError())
+		}
 		state.texture_cache.texture[tile.type] = texture
 	}
 }
@@ -87,26 +78,35 @@ init_load_texture_tower :: proc(state: ^Game_State) {
 			path = "Sources/assets/towers/Tower_archer_1.png"
 		}
 		c_path := strings.clone_to_cstring(path, context.temp_allocator)
-
 		if len(c_path) == 0 || len(path) == 0 {
 			fmt.println("Error loading the c_path of: ", tower.type)
 			continue
 		}
-
 		surface := img.Load(c_path)
 		if surface == nil {
-			fmt.println("Failed to load the image: ", c_path, " error code: ", sdl.GetError())
+			fmt.println("Failed to load image: ", path, " error: ", sdl.GetError())
 			continue
 		}
 		defer sdl.DestroySurface(surface)
-
-		texture := sdl.CreateTextureFromSurface(state.renderer, surface)
-		if texture == nil {
-			fmt.println("Error loading the texture: ", path, " with error: ", sdl.GetError())
+		converted_surface := sdl.ConvertSurface(surface, .RGBA8888)
+		if converted_surface == nil {
+			fmt.println("Failed to convert surface: ", sdl.GetError())
 			continue
 		}
-
-		sdl.SetTextureBlendMode(texture, {.BLEND})
+		defer sdl.DestroySurface(converted_surface)
+		key := sdl.MapSurfaceRGB(converted_surface, 0, 255, 0)
+		if !sdl.SetSurfaceColorKey(converted_surface, true, key) {
+			fmt.println("Failed to set color key: ", sdl.GetError())
+			continue
+		}
+		texture := sdl.CreateTextureFromSurface(state.renderer, converted_surface)
+		if texture == nil {
+			fmt.println("Failed to create texture: ", sdl.GetError())
+			continue
+		}
+		if !sdl.SetTextureBlendMode(texture, sdl.BLENDMODE_BLEND) {
+			fmt.println("Failed to set texture blend mode: ", sdl.GetError())
+		}
 		state.texture_tower.texture[tower.type] = texture
 	}
 }
@@ -115,7 +115,6 @@ draw_map :: proc(state: ^Game_State) {
 	for &tile in &state.list_tiles {
 		if tile.rect.x + tile.rect.w >= SCREEN_WIDTH - f32(state.width_right_panel) || tile.rect.x < -tile.rect.w do continue
 		if tile.rect.y < -tile.rect.h || tile.rect.y > SCREEN_HEIGHT - tile.rect.h do continue
-
 		rect := tile.rect
 		texture := state.texture_cache.texture[tile.type]
 
@@ -131,14 +130,21 @@ draw_map :: proc(state: ^Game_State) {
 			)
 			sdl.RenderFillRect(state.renderer, &rect)
 		}
-
 		if tile.is_hovered {
-			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 150)
+			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 100)
 			sdl.RenderFillRect(state.renderer, &rect)
+			if !tile.is_constructable {
+				sdl.SetRenderDrawColor(state.renderer, 240, 10, 10, 150)
+				sdl.RenderFillRect(state.renderer, &rect)
+			}
 		}
 		if tile.is_selected {
-			sdl.SetRenderDrawColor(state.renderer, 200, 20, 20, 150)
+			sdl.SetRenderDrawColor(state.renderer, 150, 30, 30, 100)
 			sdl.RenderFillRect(state.renderer, &rect)
+			if !tile.is_constructable {
+				sdl.SetRenderDrawColor(state.renderer, 10, 10, 10, 150)
+				sdl.RenderFillRect(state.renderer, &rect)
+			}
 		}
 	}
 }
@@ -147,7 +153,6 @@ draw_towers :: proc(state: ^Game_State) {
 	for &tower in &state.list_towers {
 		if tower.rect.x + tower.rect.w >= SCREEN_WIDTH - f32(state.width_right_panel) || tower.rect.x < -tower.rect.w do continue
 		if tower.rect.y < -tower.rect.h || tower.rect.y > SCREEN_HEIGHT - tower.rect.h do continue
-
 		rect := tower.rect
 		texture := state.texture_tower.texture[tower.type]
 
@@ -155,6 +160,10 @@ draw_towers :: proc(state: ^Game_State) {
 			sdl.RenderTexture(state.renderer, texture, nil, &rect)
 		} else {
 			fmt.println("Error loading the tower texture for the map")
+		}
+		if tower.is_hovered {
+			sdl.SetRenderDrawColor(state.renderer, 40, 40, 40, 150)
+			sdl.RenderFillRect(state.renderer, &rect)
 		}
 		if tower.is_selected {
 			sdl.SetRenderDrawColor(state.renderer, 200, 20, 20, 150)
