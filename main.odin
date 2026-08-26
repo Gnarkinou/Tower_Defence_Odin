@@ -1,7 +1,9 @@
 package main
 
 import "core:fmt"
+import "core:strings"
 import sdl "vendor:sdl3"
+import ttf "vendor:sdl3/ttf"
 
 SCREEN_WIDTH :: 1280
 SCREEN_HEIGHT :: 1024
@@ -42,24 +44,27 @@ tile_type :: enum {
 }
 
 Game_State :: struct {
-	running:                 bool,
-	editor_mode:             bool,
-	editor_mode_initialized: bool,
-	game_mode_initialized:   bool,
-	window:                  ^sdl.Window,
-	renderer:                ^sdl.Renderer,
-	money:                   int,
-	list_tiles:              [dynamic]Tile,
-	list_possible_towers:    [dynamic]Tower,
-	list_towers:             [dynamic]Tower,
-	selected_tile:           Tile,
-	previous_selected_tile:  Tile,
-	selected_tower:          Tower,
-	previous_selected_tower: Tower,
-	level_playing:           int,
-	width_right_panel:       int,
-	texture_cache:           Texture_cache,
-	texture_tower:           Texture_tower,
+	running:                   bool,
+	editor_mode:               bool,
+	editor_mode_initialized:   bool,
+	game_mode_initialized:     bool,
+	window:                    ^sdl.Window,
+	renderer:                  ^sdl.Renderer,
+	money:                     int,
+	list_tiles:                [dynamic]Tile,
+	list_possible_towers:      [dynamic]Tower,
+	list_towers:               [dynamic]Tower,
+	selected_tile:             Tile,
+	previous_selected_tile:    Tile,
+	selected_tower:            Tower,
+	previous_selected_tower:   Tower,
+	level_playing:             int,
+	width_right_panel:         int,
+	height_right_panel_towers: int,
+	texture_cache:             Texture_cache,
+	texture_tower:             Texture_tower,
+	font:                      ^ttf.Font,
+	player_name_gui:           Player_name_gui,
 }
 
 Texture_tower :: struct {
@@ -68,6 +73,12 @@ Texture_tower :: struct {
 
 Texture_cache :: struct {
 	texture: [tile_type]^sdl.Texture,
+}
+
+Player_name_gui :: struct {
+	rect:        sdl.FRect,
+	player_name: string,
+	texture:     ^sdl.Texture,
 }
 
 Tile :: struct {
@@ -117,6 +128,7 @@ main :: proc() {
 		level_playing           = 1,
 		width_right_panel       = 300,
 	}
+	state.player_name_gui.player_name = "Guillaume"
 
 	state.window = sdl.CreateWindow("Tower Defense Odin Style", SCREEN_WIDTH, SCREEN_HEIGHT, {})
 	if state.window == nil {
@@ -204,6 +216,7 @@ render :: proc(state: ^Game_State) {
 	draw_map(state)
 	draw_right_panel_towers(state)
 	draw_towers(state)
+	display_gui(state)
 	sdl.RenderPresent(state.renderer)
 }
 
@@ -219,4 +232,5 @@ all_cleanup :: proc(state: ^Game_State) {
 	for texture in state.texture_tower.texture {
 		sdl.DestroyTexture(texture)
 	}
+	cleanup_gui(state)
 }

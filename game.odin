@@ -52,6 +52,7 @@ init_list_possible_towers :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 		append(&state.list_possible_towers, t)
 		fmt.println("Initiliazed the possible tower: ", t.type)
 		index_x += 1
+		state.height_right_panel_towers = (index_y + 1) * TILE_SIZE
 	}
 }
 
@@ -66,6 +67,9 @@ init_game_mode :: proc(state: ^Game_State) {
 	init_load_tile_texture(state)
 	init_list_possible_towers(state, &right_panel_rect)
 	init_load_texture_tower(state)
+	if !init_gui(state) {
+		fmt.println("Error loadint the Gui: ", sdl.GetError())
+	}
 }
 
 init_list_tiles :: proc(state: ^Game_State) {
@@ -213,7 +217,10 @@ select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 	// This is for towers being selected on the map, not the right panel
 	// This should come handy for upgrades later
 	for &tower in state.list_towers {
-		if tower.coord != click_coord do continue
+		if tower.coord != click_coord {
+			tower.is_selected = false
+			continue
+		}
 		tower.is_selected = true
 		state.selected_tower = tower
 		fmt.println("The selected tower is: ", state.selected_tower)
