@@ -23,6 +23,7 @@ init_list_possible_towers :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 		t.reload_time = 5
 		t.is_selected = false
 		t.cost = 100
+		t.level = 1
 
 		#partial switch tower {
 		case .ice:
@@ -47,6 +48,7 @@ init_list_possible_towers :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 			h = TILE_SIZE,
 		}
 
+		t.upgrade_cost = t.cost * (int(t.level) + 1)
 		t.rect = rect
 		t.coord = {index_x, index_y}
 		append(&state.list_possible_towers, t)
@@ -155,6 +157,7 @@ clear_all_selected_towers_tiles :: proc(state: ^Game_State) {
 	reset_selected_tower(state)
 	reset_previously_selected_tower(state)
 	clear_selected_tiles(state)
+	init_info_tower_gui(state)
 }
 
 select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
@@ -177,6 +180,7 @@ select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 			if tower.coord != click_coord do continue
 			tower.is_selected = true
 			state.previous_selected_tower = tower
+			init_info_tower_gui(state)
 			fmt.println("Selected the tower type: ", tower.type)
 			return
 		}
@@ -187,6 +191,21 @@ select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 	reset_selected_tower(state)
 	click_coord.x = int(event.button.x / TILE_SIZE)
 	click_coord.y = int(event.button.y / TILE_SIZE)
+
+	// This is for towers being selected on the map, not the right panel
+	// This should come handy for upgrades later
+	for &tower in state.list_towers {
+		if tower.coord != click_coord {
+			tower.is_selected = false
+			continue
+		}
+		tower.is_selected = true
+		if state.selected_tower != {} do state.selected_tower = {}
+		state.selected_tower = tower
+		init_info_tower_gui(state)
+		fmt.println("The selected tower is: ", state.selected_tower)
+		return
+	}
 
 	for &tile in &state.list_tiles {
 		if tile.coord != click_coord do continue
@@ -211,19 +230,6 @@ select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 		}
 		state.selected_tile = tile
 		fmt.println("The selected tile is: ", state.selected_tile)
-		return
-	}
-
-	// This is for towers being selected on the map, not the right panel
-	// This should come handy for upgrades later
-	for &tower in state.list_towers {
-		if tower.coord != click_coord {
-			tower.is_selected = false
-			continue
-		}
-		tower.is_selected = true
-		state.selected_tower = tower
-		fmt.println("The selected tower is: ", state.selected_tower)
 		return
 	}
 }

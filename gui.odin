@@ -17,6 +17,7 @@ init_gui :: proc(state: ^Game_State) -> bool {
 	}
 
 	init_player_name_gui(state)
+	init_info_tower_gui(state)
 	return true
 }
 
@@ -27,7 +28,7 @@ init_player_name_gui :: proc(state: ^Game_State) {
 	}
 
 	color := sdl.Color{255, 255, 255, 255}
-	name_to_display := fmt.tprintf("%s -> %d €$", state.player_name_gui.player_name, state.money)
+	name_to_display := fmt.tprintf("%s %d €$", state.player_name_gui.player_name, state.money)
 	c_string := strings.clone_to_cstring(name_to_display, context.temp_allocator)
 	if len(c_string) <= 0 {
 		fmt.println("Error loading init player name gui c_string: ", sdl.GetError())
@@ -53,14 +54,62 @@ init_player_name_gui :: proc(state: ^Game_State) {
 	state.player_name_gui.rect.h = f32(surface.h)
 	state.player_name_gui.rect.x = f32(SCREEN_WIDTH - state.width_right_panel)
 	state.player_name_gui.rect.y = f32(state.height_right_panel_towers + 10)
+}
 
-	/*
-	state.player_name_gui.rect.x = f32(SCREEN_WIDTH - state.width_right_panel)
-	state.player_name_gui.rect.y = f32(state.height_right_panel_towers + 10)
-	state.player_name_gui.rect.w = f32(state.width_right_panel)
-	//state.player_name_gui.rect.h = f32(SCREEN_HEIGHT - state.height_right_panel_towers)
-	state.player_name_gui.rect.h = 40
-	*/
+init_info_tower_gui :: proc(state: ^Game_State) {
+	clear_tower_gui_texture(state)
+	t: Tower
+	if state.selected_tower != {} do t = state.selected_tower
+	else if state.previous_selected_tower != {} do t = state.previous_selected_tower
+	else do return
+
+	color := sdl.Color{255, 255, 255, 255}
+	name_to_display := ""
+	if state.selected_tower != {} {
+		name_to_display = fmt.tprintf(
+			"Tower type: %s\nDamage: %d\nFire Rate: %d\nRange: %d\nUpgrade Cost: %d\n",
+			t.type,
+			t.dmg,
+			t.reload_time,
+			t.range,
+			t.upgrade_cost,
+		)
+	} else {
+		name_to_display = fmt.tprintf(
+			"Tower type: %s\nDamage: %d\nFire Rate: %d\nRange: %d\nCost: %d\n",
+			t.type,
+			t.dmg,
+			t.reload_time,
+			t.range,
+			t.cost,
+		)
+	}
+	c_string := strings.clone_to_cstring(name_to_display, context.temp_allocator)
+	if len(c_string) <= 0 {
+		fmt.println("Error loading init info tower gui c_string: ", sdl.GetError())
+		return
+	}
+	surface := ttf.RenderText_Blended_Wrapped(state.font, c_string, 0, color, 0)
+	if surface == nil {
+		fmt.println("Error loading the surface for the init_info_tower: ", sdl.GetError())
+		return
+	}
+	defer sdl.DestroySurface(surface)
+
+	texture := sdl.CreateTextureFromSurface(state.renderer, surface)
+	if texture == nil {
+		fmt.println("Error loading the texture for the init_info_tower: ", sdl.GetError())
+		return
+	}
+
+	if state.tower_info_gui.texture != nil do sdl.DestroyTexture(state.tower_info_gui.texture)
+	state.tower_info_gui.texture = texture
+
+	state.tower_info_gui.rect.w = f32(surface.w)
+	state.tower_info_gui.rect.h = f32(surface.h)
+	state.tower_info_gui.rect.x = f32(SCREEN_WIDTH - state.width_right_panel)
+	state.tower_info_gui.rect.y =
+		f32(state.height_right_panel_towers + 10) + state.player_name_gui.rect.y
 }
 
 cleanup_gui :: proc(state: ^Game_State) {
@@ -68,8 +117,13 @@ cleanup_gui :: proc(state: ^Game_State) {
 	ttf.Quit()
 }
 
+clear_tower_gui_texture :: proc(state: ^Game_State) {
+	if state.tower_info_gui != {} do sdl.DestroyTexture(state.tower_info_gui.texture)
+}
+
 display_gui :: proc(state: ^Game_State) {
 	display_player_name(state)
+	display_tower_info(state)
 }
 
 display_player_name :: proc(state: ^Game_State) {
@@ -78,5 +132,15 @@ display_player_name :: proc(state: ^Game_State) {
 		state.player_name_gui.texture,
 		nil,
 		&state.player_name_gui.rect,
+	)
+}
+
+display_tower_info :: proc(state: ^Game_State) {
+	if state.tower_info_gui == {} do return
+	sdl.RenderTexture(
+		state.renderer,
+		state.tower_info_gui.texture,
+		nil,
+		&state.tower_info_gui.rect,
 	)
 }

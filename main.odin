@@ -65,6 +65,7 @@ Game_State :: struct {
 	texture_tower:             Texture_tower,
 	font:                      ^ttf.Font,
 	player_name_gui:           Player_name_gui,
+	tower_info_gui:            Tower_info_gui,
 }
 
 Texture_tower :: struct {
@@ -73,6 +74,11 @@ Texture_tower :: struct {
 
 Texture_cache :: struct {
 	texture: [tile_type]^sdl.Texture,
+}
+
+Tower_info_gui :: struct {
+	rect:    sdl.FRect,
+	texture: ^sdl.Texture,
 }
 
 Player_name_gui :: struct {
@@ -93,16 +99,18 @@ Tile :: struct {
 }
 
 Tower :: struct {
-	type:        tower_type,
-	damage_type: dmg_type,
-	dmg:         int,
-	reload_time: u8,
-	range:       u8,
-	is_selected: bool,
-	is_hovered:  bool,
-	coord:       [2]int,
-	cost:        int,
-	rect:        sdl.FRect,
+	type:         tower_type,
+	damage_type:  dmg_type,
+	dmg:          int,
+	reload_time:  u8,
+	range:        u8,
+	is_selected:  bool,
+	is_hovered:   bool,
+	coord:        [2]int,
+	cost:         int,
+	upgrade_cost: int,
+	rect:         sdl.FRect,
+	level:        u8,
 }
 
 projectile :: struct {
@@ -128,7 +136,7 @@ main :: proc() {
 		level_playing           = 1,
 		width_right_panel       = 300,
 	}
-	state.player_name_gui.player_name = "Guillaume"
+	state.player_name_gui.player_name = "Credit:"
 
 	state.window = sdl.CreateWindow("Tower Defense Odin Style", SCREEN_WIDTH, SCREEN_HEIGHT, {})
 	if state.window == nil {
