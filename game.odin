@@ -140,6 +140,7 @@ hovered_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 }
 
 reset_selected_tower :: proc(state: ^Game_State) {
+	fmt.println("Reset the selected tower")
 	for &tower in &state.list_towers {
 		tower.is_selected = false
 	}
@@ -147,6 +148,7 @@ reset_selected_tower :: proc(state: ^Game_State) {
 }
 
 reset_previously_selected_tower :: proc(state: ^Game_State) {
+	fmt.println("reset the previously_selected tower")
 	for &tower in &state.list_possible_towers {
 		tower.is_selected = false
 	}
@@ -154,6 +156,7 @@ reset_previously_selected_tower :: proc(state: ^Game_State) {
 }
 
 clear_all_selected_towers_tiles :: proc(state: ^Game_State) {
+	fmt.println("Run clear all tiles and tower")
 	reset_selected_tower(state)
 	reset_previously_selected_tower(state)
 	clear_selected_tiles(state)
@@ -161,8 +164,10 @@ clear_all_selected_towers_tiles :: proc(state: ^Game_State) {
 }
 
 select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
+	fmt.println("Trying to select something")
 	if event.button.x > SCREEN_WIDTH || event.button.x < 0 do return
 	if event.button.y < 0 || event.button.y > SCREEN_HEIGHT do return
+	fmt.println("Got something to handle in the select_tile_game")
 
 	// state.previous_selected_tile is for the right panel tile
 	// state.selected_tile is for the map tile
@@ -211,7 +216,7 @@ select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 		if tile.coord != click_coord do continue
 		tile.is_selected = true
 		if !tile.is_constructable {
-			fmt.println("That tile is not consructable")
+			fmt.println("That tile is not constructable")
 			return
 		}
 		// previous selected tower is for the right panel

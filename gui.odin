@@ -22,6 +22,7 @@ init_gui :: proc(state: ^Game_State) -> bool {
 }
 
 init_player_name_gui :: proc(state: ^Game_State) {
+	fmt.println("initiating the init player name")
 	if len(state.player_name_gui.player_name) == 0 {
 		fmt.println("Error with the lenght od the player name (0): ", sdl.GetError())
 		return
@@ -102,7 +103,7 @@ init_info_tower_gui :: proc(state: ^Game_State) {
 		return
 	}
 
-	if state.tower_info_gui.texture != nil do sdl.DestroyTexture(state.tower_info_gui.texture)
+	//if state.tower_info_gui.texture != nil do sdl.DestroyTexture(state.tower_info_gui.texture)
 	state.tower_info_gui.texture = texture
 
 	state.tower_info_gui.rect.w = f32(surface.w)
@@ -110,14 +111,17 @@ init_info_tower_gui :: proc(state: ^Game_State) {
 	state.tower_info_gui.rect.x = f32(SCREEN_WIDTH - state.width_right_panel)
 	state.tower_info_gui.rect.y =
 		f32(state.height_right_panel_towers + 10) + state.player_name_gui.rect.y
+	fmt.println("Texture created for a tower: ", t)
 }
 
 cleanup_gui :: proc(state: ^Game_State) {
+	fmt.println("Cleaning the ttf font")
 	if state.font != nil do ttf.CloseFont(state.font)
 	ttf.Quit()
 }
 
 clear_tower_gui_texture :: proc(state: ^Game_State) {
+	fmt.println("Cleaning the tower gui texture")
 	if state.tower_info_gui != {} do sdl.DestroyTexture(state.tower_info_gui.texture)
 }
 
