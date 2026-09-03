@@ -71,12 +71,15 @@ init_all_possible_tiles :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 		case .path_1:
 			t.color = {30, 30, 30, 255}
 			t.is_path = true
+			t.is_constructable = false
 		case .path_2:
 			t.color = {30, 30, 30, 255}
 			t.is_path = true
+			t.is_constructable = false
 		case .path_3:
 			t.color = {30, 30, 30, 255}
 			t.is_path = true
+			t.is_constructable = false
 		case .rock_1:
 			t.color = {200, 200, 200, 255}
 			t.is_constructable = false

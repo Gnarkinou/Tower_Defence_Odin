@@ -24,6 +24,7 @@ init_list_possible_towers :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 		t.is_selected = false
 		t.cost = 100
 		t.level = 1
+		t.armor_piercing = 0
 
 		#partial switch tower {
 		case .ice:
@@ -40,6 +41,8 @@ init_list_possible_towers :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 			t.cost = 90
 		case .arrow:
 			t.damage_type = .piecing
+			t.armor_piercing = 2
+			t.reload_time = 6
 		}
 		rect := sdl.FRect {
 			x = panel.x + f32(index_x) * TILE_SIZE,
@@ -140,11 +143,17 @@ hovered_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 }
 
 reset_selected_tower :: proc(state: ^Game_State) {
+	reset_circle_tower(state)
 	fmt.println("Reset the selected tower")
 	for &tower in &state.list_towers {
 		tower.is_selected = false
 	}
 	state.selected_tower = {}
+}
+
+reset_circle_tower :: proc(state: ^Game_State) {
+	if state.selected_tower.points == {} do return
+	state.selected_tower.points = {}
 }
 
 reset_previously_selected_tower :: proc(state: ^Game_State) {
@@ -207,6 +216,7 @@ select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 		tower.is_selected = true
 		if state.selected_tower != {} do state.selected_tower = {}
 		state.selected_tower = tower
+		create_circle_tower(state)
 		init_info_tower_gui(state)
 		fmt.println("The selected tower is: ", state.selected_tower)
 		return
@@ -232,6 +242,8 @@ select_tile_game :: proc(state: ^Game_State, event: ^sdl.Event) {
 			state.money -= t.cost
 			fmt.println("Building a tower: ", t)
 			append(&state.list_towers, t^)
+			state.selected_tower = t^
+			create_circle_tower(state)
 		}
 		state.selected_tile = tile
 		fmt.println("The selected tile is: ", state.selected_tile)

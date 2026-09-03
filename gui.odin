@@ -68,18 +68,20 @@ init_info_tower_gui :: proc(state: ^Game_State) {
 	name_to_display := ""
 	if state.selected_tower != {} {
 		name_to_display = fmt.tprintf(
-			"Tower type: %s\nDamage: %d\nFire Rate: %d\nRange: %d\nUpgrade Cost: %d\n",
+			"Tower type: %s\nDamage: %d\nArmor Piercing: %d\nFire Rate: %d\nRange: %d\nUpgrade Cost: %d\n",
 			t.type,
 			t.dmg,
+			t.armor_piercing,
 			t.reload_time,
 			t.range,
 			t.upgrade_cost,
 		)
 	} else {
 		name_to_display = fmt.tprintf(
-			"Tower type: %s\nDamage: %d\nFire Rate: %d\nRange: %d\nCost: %d\n",
+			"Tower type: %s\nDamage: %d\nArmor Piercing: %d\nFire Rate: %d\nRange: %d\nCost: %d\n",
 			t.type,
 			t.dmg,
+			t.armor_piercing,
 			t.reload_time,
 			t.range,
 			t.cost,
@@ -97,15 +99,14 @@ init_info_tower_gui :: proc(state: ^Game_State) {
 	}
 	defer sdl.DestroySurface(surface)
 
+	if state.tower_info_gui.texture != nil do sdl.DestroyTexture(state.tower_info_gui.texture)
 	texture := sdl.CreateTextureFromSurface(state.renderer, surface)
 	if texture == nil {
 		fmt.println("Error loading the texture for the init_info_tower: ", sdl.GetError())
 		return
 	}
 
-	//if state.tower_info_gui.texture != nil do sdl.DestroyTexture(state.tower_info_gui.texture)
 	state.tower_info_gui.texture = texture
-
 	state.tower_info_gui.rect.w = f32(surface.w)
 	state.tower_info_gui.rect.h = f32(surface.h)
 	state.tower_info_gui.rect.x = f32(SCREEN_WIDTH - state.width_right_panel)

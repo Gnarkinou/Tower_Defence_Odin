@@ -8,6 +8,7 @@ import ttf "vendor:sdl3/ttf"
 SCREEN_WIDTH :: 1280
 SCREEN_HEIGHT :: 1024
 TILE_SIZE :: 80
+SEGMENTS :: 64
 
 tower_type :: enum {
 	ice,
@@ -99,25 +100,28 @@ Tile :: struct {
 }
 
 Tower :: struct {
-	type:         tower_type,
-	damage_type:  dmg_type,
-	dmg:          int,
-	reload_time:  u8,
-	range:        u8,
-	is_selected:  bool,
-	is_hovered:   bool,
-	coord:        [2]int,
-	cost:         int,
-	upgrade_cost: int,
-	rect:         sdl.FRect,
-	level:        u8,
+	type:           tower_type,
+	damage_type:    dmg_type,
+	dmg:            int,
+	reload_time:    u8,
+	range:          u8,
+	is_selected:    bool,
+	is_hovered:     bool,
+	coord:          [2]int,
+	cost:           int,
+	upgrade_cost:   int,
+	rect:           sdl.FRect,
+	level:          u8,
+	armor_piercing: u8,
+	points:         [SEGMENTS + 1]sdl.FPoint,
 }
 
 projectile :: struct {
-	damage_type: ^dmg_type,
-	dmg:         ^int,
-	rect:        ^sdl.FRect,
-	is_alive:    bool,
+	damage_type:    ^dmg_type,
+	dmg:            ^int,
+	rect:           ^sdl.FRect,
+	is_alive:       bool,
+	armor_piercing: ^u8,
 }
 
 main :: proc() {
@@ -161,6 +165,7 @@ main :: proc() {
 	sdl.SetRenderDrawBlendMode(state.renderer, sdl.BLENDMODE_BLEND)
 	defer all_cleanup(&state)
 	//init_map(&state)
+	//state.editor_mode = true
 
 	for state.running {
 		if state.editor_mode {

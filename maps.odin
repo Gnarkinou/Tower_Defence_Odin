@@ -168,6 +168,7 @@ draw_towers :: proc(state: ^Game_State) {
 		if tower.is_selected {
 			sdl.SetRenderDrawColor(state.renderer, 200, 20, 20, 150)
 			sdl.RenderFillRect(state.renderer, &rect)
+			draw_circle_tower(state)
 		}
 	}
 }
