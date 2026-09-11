@@ -49,24 +49,28 @@ Game_State :: struct {
 	editor_mode:               bool,
 	editor_mode_initialized:   bool,
 	game_mode_initialized:     bool,
+	start:                     bool,
 	window:                    ^sdl.Window,
 	renderer:                  ^sdl.Renderer,
 	money:                     int,
 	list_tiles:                [dynamic]Tile,
 	list_possible_towers:      [dynamic]Tower,
 	list_towers:               [dynamic]Tower,
+	list_enemies:              [dynamic]Ennemy,
 	selected_tile:             Tile,
 	previous_selected_tile:    Tile,
 	selected_tower:            Tower,
 	previous_selected_tower:   Tower,
-	level_playing:             int,
+	level_playing:             u8,
 	width_right_panel:         int,
 	height_right_panel_towers: int,
 	texture_cache:             Texture_cache,
 	texture_tower:             Texture_tower,
+	texture_enemy:             Texture_enemy,
 	font:                      ^ttf.Font,
 	player_name_gui:           Player_name_gui,
 	tower_info_gui:            Tower_info_gui,
+	ennemy_delta_time:         u32,
 }
 
 Texture_tower :: struct {
@@ -75,6 +79,10 @@ Texture_tower :: struct {
 
 Texture_cache :: struct {
 	texture: [tile_type]^sdl.Texture,
+}
+
+Texture_enemy :: struct {
+	texture: [ennemy_type]^sdl.Texture,
 }
 
 Tower_info_gui :: struct {
@@ -86,6 +94,20 @@ Player_name_gui :: struct {
 	rect:        sdl.FRect,
 	player_name: string,
 	texture:     ^sdl.Texture,
+}
+
+Ennemy :: struct {
+	type:           ennemy_type,
+	rect:           sdl.FRect,
+	coord:          [2]int,
+	previous_coord: [2]int, // This is for pathfinding
+	life:           u8,
+	armor:          u8,
+	max_speed:      int,
+	speed:          int,
+	list_injuries:  [dynamic]dmg_type,
+	resistance:     [dynamic]dmg_type,
+	weakness:       [dynamic]dmg_type,
 }
 
 Tile :: struct {
@@ -100,20 +122,21 @@ Tile :: struct {
 }
 
 Tower :: struct {
-	type:           tower_type,
-	damage_type:    dmg_type,
-	dmg:            int,
-	reload_time:    u8,
-	range:          u8,
-	is_selected:    bool,
-	is_hovered:     bool,
-	coord:          [2]int,
-	cost:           int,
-	upgrade_cost:   int,
-	rect:           sdl.FRect,
-	level:          u8,
-	armor_piercing: u8,
-	points:         [SEGMENTS + 1]sdl.FPoint,
+	type:                tower_type,
+	damage_type:         dmg_type,
+	dmg:                 int,
+	reload_time:         u8,
+	range:               u8,
+	is_selected:         bool,
+	is_hovered:          bool,
+	coord:               [2]int,
+	cost:                int,
+	upgrade_cost:        int,
+	rect:                sdl.FRect,
+	level:               u8,
+	armor_piercing:      u8,
+	projectile_duration: u8, // time of burning fire of electrocute or bleeding
+	points:              [SEGMENTS + 1]sdl.FPoint,
 }
 
 projectile :: struct {
@@ -122,6 +145,7 @@ projectile :: struct {
 	rect:           ^sdl.FRect,
 	is_alive:       bool,
 	armor_piercing: ^u8,
+	duration:       ^u8,
 }
 
 main :: proc() {
@@ -139,6 +163,8 @@ main :: proc() {
 		money                   = 350,
 		level_playing           = 1,
 		width_right_panel       = 300,
+		start                   = false,
+		ennemy_delta_time       = 0,
 	}
 	state.player_name_gui.player_name = "Credit:"
 
@@ -166,6 +192,7 @@ main :: proc() {
 	defer all_cleanup(&state)
 	//init_map(&state)
 	//state.editor_mode = true
+	state.start = true
 
 	for state.running {
 		if state.editor_mode {
@@ -219,7 +246,7 @@ handle_events :: proc(state: ^Game_State) {
 }
 
 update :: proc(state: ^Game_State) {
-
+	generate_ennemy(state)
 }
 
 render :: proc(state: ^Game_State) {

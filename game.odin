@@ -25,20 +25,24 @@ init_list_possible_towers :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 		t.cost = 100
 		t.level = 1
 		t.armor_piercing = 0
+		t.projectile_duration = 0
 
 		#partial switch tower {
 		case .ice:
 			t.damage_type = .ice
 			t.dmg = 8
 			t.cost = 110
+			t.projectile_duration = 3
 		case .fire:
 			t.damage_type = .fire
 			t.cost = 120
+			t.projectile_duration = 2
 		case .lighting:
 			t.damage_type = .lighting
 			t.dmg = 7
 			t.reload_time = 3
 			t.cost = 90
+			t.projectile_duration = 1
 		case .arrow:
 			t.damage_type = .piecing
 			t.armor_piercing = 2
