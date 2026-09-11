@@ -57,6 +57,7 @@ Game_State :: struct {
 	list_possible_towers:      [dynamic]Tower,
 	list_towers:               [dynamic]Tower,
 	list_enemies:              [dynamic]Ennemy,
+	list_possible_enemies:     [dynamic]Ennemy,
 	selected_tile:             Tile,
 	previous_selected_tile:    Tile,
 	selected_tower:            Tower,
@@ -66,7 +67,6 @@ Game_State :: struct {
 	height_right_panel_towers: int,
 	texture_cache:             Texture_cache,
 	texture_tower:             Texture_tower,
-	texture_enemy:             Texture_enemy,
 	font:                      ^ttf.Font,
 	player_name_gui:           Player_name_gui,
 	tower_info_gui:            Tower_info_gui,
@@ -81,8 +81,14 @@ Texture_cache :: struct {
 	texture: [tile_type]^sdl.Texture,
 }
 
-Texture_enemy :: struct {
-	texture: [ennemy_type]^sdl.Texture,
+animation_state_enemy :: enum {
+	walk,
+	die,
+	//attack,
+}
+
+Animation_texture_enemy :: struct {
+	textures: [ennemy_type][animation_state_enemy][6]^sdl.Texture,
 }
 
 Tower_info_gui :: struct {
@@ -108,6 +114,10 @@ Ennemy :: struct {
 	list_injuries:  [dynamic]dmg_type,
 	resistance:     [dynamic]dmg_type,
 	weakness:       [dynamic]dmg_type,
+	current_frame:  u8,
+	state:          animation_state_enemy,
+	frame_timer:    u8,
+	frame_duration: u8,
 }
 
 Tile :: struct {
@@ -264,6 +274,7 @@ all_cleanup :: proc(state: ^Game_State) {
 	delete(state.list_tiles)
 	delete(state.list_towers)
 	delete(state.list_possible_towers)
+	delete(state.list_enemies)
 
 	for texture in state.texture_cache.texture {
 		sdl.DestroyTexture(texture)
@@ -272,5 +283,6 @@ all_cleanup :: proc(state: ^Game_State) {
 	for texture in state.texture_tower.texture {
 		sdl.DestroyTexture(texture)
 	}
+
 	cleanup_gui(state)
 }
