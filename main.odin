@@ -57,7 +57,7 @@ Game_State :: struct {
 	list_possible_towers:      [dynamic]Tower,
 	list_towers:               [dynamic]Tower,
 	list_enemies:              [dynamic]Ennemy,
-	list_possible_enemies:     [dynamic]Ennemy,
+	list_possible_enemies:     [dynamic]ennemy_type,
 	selected_tile:             Tile,
 	previous_selected_tile:    Tile,
 	selected_tower:            Tower,
@@ -67,6 +67,7 @@ Game_State :: struct {
 	height_right_panel_towers: int,
 	texture_cache:             Texture_cache,
 	texture_tower:             Texture_tower,
+	texture_enemy:             Animation_texture_enemy,
 	font:                      ^ttf.Font,
 	player_name_gui:           Player_name_gui,
 	tower_info_gui:            Tower_info_gui,
@@ -88,7 +89,7 @@ animation_state_enemy :: enum {
 }
 
 Animation_texture_enemy :: struct {
-	textures: [ennemy_type][animation_state_enemy][6]^sdl.Texture,
+	textures: [ennemy_type][animation_state_enemy][10]^sdl.Texture,
 }
 
 Tower_info_gui :: struct {
@@ -103,21 +104,22 @@ Player_name_gui :: struct {
 }
 
 Ennemy :: struct {
-	type:           ennemy_type,
-	rect:           sdl.FRect,
-	coord:          [2]int,
-	previous_coord: [2]int, // This is for pathfinding
-	life:           u8,
-	armor:          u8,
-	max_speed:      int,
-	speed:          int,
-	list_injuries:  [dynamic]dmg_type,
-	resistance:     [dynamic]dmg_type,
-	weakness:       [dynamic]dmg_type,
-	current_frame:  u8,
-	state:          animation_state_enemy,
-	frame_timer:    u8,
-	frame_duration: u8,
+	type:             ennemy_type,
+	rect:             sdl.FRect,
+	coord:            [2]int,
+	previous_coord:   [2]int, // This is for pathfinding
+	life:             u8,
+	armor:            u8,
+	max_speed:        int,
+	speed:            int,
+	list_injuries:    [dynamic]dmg_type,
+	resistance:       [dynamic]dmg_type,
+	weakness:         [dynamic]dmg_type,
+	current_frame:    u8,
+	number_of_frames: u8,
+	state:            animation_state_enemy,
+	frame_timer:      u8,
+	frame_duration:   u8,
 }
 
 Tile :: struct {

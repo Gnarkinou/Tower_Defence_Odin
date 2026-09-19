@@ -61,7 +61,7 @@ init_all_possible_tiles :: proc(state: ^Game_State, panel: ^sdl.FRect) {
 		t := new(Tile)
 		t.is_constructable = true
 
-		t.is_path = fale
+		t.is_path = false
 
 		#partial switch tile {
 		case .water_1:
