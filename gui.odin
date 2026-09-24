@@ -50,7 +50,6 @@ init_player_name_gui :: proc(state: ^Game_State) {
 
 	if state.player_name_gui.texture != nil do sdl.DestroyTexture(state.player_name_gui.texture)
 	state.player_name_gui.texture = texture
-
 	state.player_name_gui.rect.w = f32(surface.w)
 	state.player_name_gui.rect.h = f32(surface.h)
 	state.player_name_gui.rect.x = f32(SCREEN_WIDTH - state.width_right_panel)

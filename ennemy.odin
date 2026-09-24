@@ -15,14 +15,23 @@ ennemy_type :: enum {
 
 init_load_texture_enemies :: proc(state: ^Game_State) {
 	for enemy_type_item in state.list_possible_enemies {
+		number_frames: u8
 		switch enemy_type_item {
 		case .ork_1:
-			for i in 0 ..< 10 {
+			number_frames = 10
+			for i in 0 ..< number_frames {
 				path := fmt.tprintf("Sources/assets/enemies/orcs/orcs1/ORK_01_WALK_%03d.png", i)
 				c_path := strings.clone_to_cstring(path, context.temp_allocator)
 				surface := img.Load(c_path)
 				if surface == nil {
-					fmt.println("Failed to load image: ", path, " error: ", sdl.GetError())
+					fmt.println(
+						"Failed to load image: ",
+						path,
+						" for ennemy: ",
+						enemy_type_item,
+						" error: ",
+						sdl.GetError(),
+					)
 					continue
 				}
 				defer sdl.DestroySurface(surface)
