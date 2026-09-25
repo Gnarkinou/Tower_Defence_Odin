@@ -49,7 +49,8 @@ Game_State :: struct {
 	editor_mode:               bool,
 	editor_mode_initialized:   bool,
 	game_mode_initialized:     bool,
-	start:                     bool,
+	is_start:                  bool, //This is if the wave is going on (start button clicked, ennemies coming)
+	is_pause:                  bool, // This is if the game is in pause
 	window:                    ^sdl.Window,
 	renderer:                  ^sdl.Renderer,
 	money:                     int,
@@ -71,6 +72,7 @@ Game_State :: struct {
 	font:                      ^ttf.Font,
 	player_name_gui:           Player_name_gui,
 	tower_info_gui:            Tower_info_gui,
+	start_button:              Start_Button_gui,
 	ennemy_delta_time:         u32,
 }
 
@@ -101,6 +103,12 @@ Player_name_gui :: struct {
 	rect:        sdl.FRect,
 	player_name: string,
 	texture:     ^sdl.Texture,
+}
+
+Start_Button_gui :: struct {
+	rect:       sdl.FRect,
+	texture:    ^sdl.Texture,
+	is_clicked: bool,
 }
 
 Ennemy :: struct {
@@ -175,7 +183,8 @@ main :: proc() {
 		money                   = 350,
 		level_playing           = 1,
 		width_right_panel       = 300,
-		start                   = false,
+		is_start                = false,
+		is_pause                = false,
 		ennemy_delta_time       = 0,
 	}
 	state.player_name_gui.player_name = "Credit:"
@@ -204,7 +213,7 @@ main :: proc() {
 	defer all_cleanup(&state)
 	//init_map(&state)
 	//state.editor_mode = true
-	state.start = true
+	//state.is_start = true
 
 	for state.running {
 		if state.editor_mode {
@@ -242,6 +251,7 @@ handle_events :: proc(state: ^Game_State) {
 		case .MOUSE_BUTTON_DOWN:
 			if event.button.button == sdl.BUTTON_LEFT {
 				select_tile_game(state, &event)
+				click_start_button(&event, state)
 				//fmt.println("Left click at: ", event.button.x, event.button.y)
 			} else if event.button.button == sdl.BUTTON_RIGHT {
 				clear_all_selected_towers_tiles(state)
@@ -258,7 +268,13 @@ handle_events :: proc(state: ^Game_State) {
 }
 
 update :: proc(state: ^Game_State) {
-	generate_ennemy(state)
+	if !state.is_start && state.start_button == {} && !state.editor_mode do init_start_button(state)
+	if state.is_start && !state.editor_mode && !state.is_pause do generate_ennemy(state)
+	if state.start_button.is_clicked == true {
+		state.is_start = true
+		clear_start_button(state)
+		clear_start_button_texture(state)
+	}
 }
 
 render :: proc(state: ^Game_State) {

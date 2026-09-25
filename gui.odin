@@ -21,6 +21,35 @@ init_gui :: proc(state: ^Game_State) -> bool {
 	return true
 }
 
+init_start_button :: proc(state: ^Game_State) {
+	fmt.println("Initializing the start button")
+	color := sdl.Color{255, 255, 255, 255}
+	name_to_display := fmt.tprintf("Start the wave %d", state.level_playing)
+	c_string := strings.clone_to_cstring(name_to_display, context.temp_allocator)
+	if len(c_string) <= 0 {
+		fmt.println("Error loading init player name gui c_string: ", sdl.GetError())
+		return
+	}
+	surface := ttf.RenderText_Blended(state.font, c_string, 0, color)
+	if surface == nil {
+		fmt.println("Error loading the surface for the init_player_name: ", sdl.GetError())
+		return
+	}
+	defer sdl.DestroySurface(surface)
+
+	texture := sdl.CreateTextureFromSurface(state.renderer, surface)
+	if texture == nil {
+		fmt.println("Error loading the texture for the init_player_name: ", sdl.GetError())
+		return
+	}
+	if state.start_button.texture != nil do sdl.DestroyTexture(state.start_button.texture)
+	state.start_button.texture = texture
+	state.start_button.rect.w = f32(surface.w)
+	state.start_button.rect.h = f32(surface.h)
+	state.start_button.rect.x = f32(SCREEN_WIDTH - state.width_right_panel)
+	state.start_button.rect.y = f32(SCREEN_HEIGHT - 100)
+}
+
 init_player_name_gui :: proc(state: ^Game_State) {
 	fmt.println("initiating the init player name")
 	if len(state.player_name_gui.player_name) == 0 {
@@ -114,7 +143,19 @@ init_info_tower_gui :: proc(state: ^Game_State) {
 	fmt.println("Texture created for a tower: ", t)
 }
 
+click_start_button :: proc(event: ^sdl.Event, state: ^Game_State) {
+	fmt.println("Detecting if the click is on the start button")
+	if state.is_start || state.start_button == {} || state.editor_mode do return
+	if event.button.x > state.start_button.rect.x + state.start_button.rect.w || event.button.x < state.start_button.rect.x do return
+	if event.button.y > state.start_button.rect.y + state.start_button.rect.h || event.button.y < state.start_button.rect.y do return
+	fmt.println("Cliked on the start button detected !!")
+	state.start_button.is_clicked = true
+}
+
 cleanup_gui :: proc(state: ^Game_State) {
+	fmt.println("Cleaning up the GUI textures")
+	clear_start_button_texture(state)
+	clear_start_button(state)
 	fmt.println("Cleaning the ttf font")
 	if state.font != nil do ttf.CloseFont(state.font)
 	ttf.Quit()
@@ -125,9 +166,21 @@ clear_tower_gui_texture :: proc(state: ^Game_State) {
 	if state.tower_info_gui != {} do sdl.DestroyTexture(state.tower_info_gui.texture)
 }
 
+clear_start_button :: proc(state: ^Game_State) {
+	fmt.println("Clearing the start button")
+	if state.start_button == {} do return
+	state.start_button = {}
+}
+
+clear_start_button_texture :: proc(state: ^Game_State) {
+	fmt.println("Cleaning the start button texture")
+	if state.start_button.texture != nil do sdl.DestroyTexture(state.start_button.texture)
+}
+
 display_gui :: proc(state: ^Game_State) {
 	display_player_name(state)
 	display_tower_info(state)
+	if !state.is_start do display_start_button(state)
 }
 
 display_player_name :: proc(state: ^Game_State) {
@@ -147,4 +200,9 @@ display_tower_info :: proc(state: ^Game_State) {
 		nil,
 		&state.tower_info_gui.rect,
 	)
+}
+
+display_start_button :: proc(state: ^Game_State) {
+	if state.start_button == {} || state.is_start || state.editor_mode do return
+	sdl.RenderTexture(state.renderer, state.start_button.texture, nil, &state.start_button.rect)
 }
