@@ -66,10 +66,24 @@ generate_ennemy :: proc(state: ^Game_State) {
 		state.ennemy_delta_time += 1
 		if state.ennemy_delta_time < 60 do return
 		fmt.printf("Placeholder -- Generating ennemies for level %v now\n", state.level_playing)
+		enemy := new(Ennemy)
+		for tile in state.list_tiles {
+			#partial switch tile.type {
+			case .start_1:
+				enemy.coord = tile.coord
+				enemy.previous_coord = tile.coord
+				enemy.rect.x = tile.rect.x
+				enemy.rect.y = tile.rect.y
+			}
+		}
 		state.ennemy_delta_time = 0
 	}
 }
 
 draw_enemies :: proc(state: ^Game_State) {
+
+}
+
+path_next_tile :: proc(state: ^Game_State, enemy: ^Ennemy) {
 
 }

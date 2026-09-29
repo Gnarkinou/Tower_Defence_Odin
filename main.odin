@@ -116,6 +116,7 @@ Ennemy :: struct {
 	rect:             sdl.FRect,
 	coord:            [2]int,
 	previous_coord:   [2]int, // This is for pathfinding
+	future_coord:     [2]int, // This is for pathfinding
 	life:             u8,
 	armor:            u8,
 	max_speed:        int,

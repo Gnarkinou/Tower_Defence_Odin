@@ -26,7 +26,6 @@ create_circle_tower :: proc(state: ^Game_State) {
 
 draw_circle_tower :: proc(state: ^Game_State) {
 	sdl.SetRenderDrawColor(state.renderer, 255, 255, 255, 255)
-
 	sdl.RenderLines(
 		state.renderer,
 		raw_data(state.selected_tower.points[:]),
