@@ -111,13 +111,27 @@ Start_Button_gui :: struct {
 	is_clicked: bool,
 }
 
+Direction :: enum {
+	up,
+	down,
+	right,
+	left,
+	up_right,
+	up_left,
+	down_right,
+	down_left,
+}
+
 Ennemy :: struct {
 	type:             ennemy_type,
 	rect:             sdl.FRect,
 	coord:            [2]int,
 	previous_coord:   [2]int, // This is for pathfinding
 	future_coord:     [2]int, // This is for pathfinding
+	direction:        Direction,
 	life:             u8,
+	is_alive:         bool,
+	is_end_tile:      bool,
 	armor:            u8,
 	max_speed:        int,
 	speed:            int,
